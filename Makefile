@@ -2,7 +2,16 @@
 # Hello World Platform
 # ####################################################
 
-include defs.arp
+# Variable that points to SystemC installation path
+export SYSTEMC :=  /home/staff/rodolfo/mc723/systemc
+
+# Variable that points to TLM installation path
+export TLM_PATH := /home/staff/rodolfo/mc723/systemc/include/tlm
+
+# Variable that points to ArchC installation path
+export ARCHC_PATH = /home/staff/rodolfo/mc723/archc
+
+export PATH:=/l/archc/compilers/bin:$(PATH)
 
 TARGET=helloworld_mips.01
 EXE = $(TARGET).x
