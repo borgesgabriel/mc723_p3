@@ -1,5 +1,5 @@
 /**
- * @file      ac_tlm_mem.cpp
+ * @file      memory.cpp
  * @author    Bruno de Carvalho Albertini
  *
  * @author    The ArchC Team
@@ -34,12 +34,10 @@
 // SystemC includes
 // ArchC includes
 
-#include "ac_tlm_mem.h"
+#include "memory.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// Namespace to isolate memory from ArchC
-using user::ac_tlm_mem;
 
 /// Constructor
 ac_tlm_mem::ac_tlm_mem( sc_module_name module_name , int k ) :

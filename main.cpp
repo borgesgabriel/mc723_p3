@@ -23,8 +23,6 @@ const char *archc_options="-abi -dy ";
 #include  "mips.H"
 #include  "memory.h"
 
-using user::memory;
-
 int sc_main(int ac, char *av[])
 {
 

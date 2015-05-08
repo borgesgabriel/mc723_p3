@@ -1,5 +1,5 @@
 /**
- * @file      ac_tlm_mem.h
+ * @file      memory.h
  * @author    Bruno de Carvalho Albertini
  *
  * @author    The ArchC Team
@@ -31,8 +31,8 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef AC_TLM_MEM_H_
-#define AC_TLM_MEM_H_
+#ifndef _MEMORY_H_
+#define _MEMORY_H_
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -51,9 +51,6 @@ using tlm::tlm_transport_if;
 
 //#define DEBUG
 
-/// Namespace to isolate memory from ArchC
-namespace user
-{
 
 /// A TLM memory
 class ac_tlm_mem :
@@ -121,6 +118,4 @@ private:
 
 };
 
-};
-
-#endif //AC_TLM_MEM_H_
+#endif //_MEMORY_H_
