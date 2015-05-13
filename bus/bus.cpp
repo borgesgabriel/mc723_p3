@@ -55,6 +55,9 @@ ac_tlm_bus::~ac_tlm_bus()
 {
 }
 
+/// This is the transport method. Everything should go through this file.
+/// To connect more components, you will need to have an if/then/else or a switch
+/// statement inside this method. Notice that ac_tlm_req has an address field.
 ac_tlm_rsp ac_tlm_bus::transport(const ac_tlm_req &request) 
 {
     ac_tlm_rsp response;

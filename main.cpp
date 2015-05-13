@@ -29,7 +29,9 @@ int sc_main(int ac, char *av[])
 
   //!  ISA simulator
   mips mips_proc1("mips");
+  //! Bus
   ac_tlm_bus bus("bus");
+// Memory
   ac_tlm_mem mem("mem");
 
 #ifdef AC_DEBUG
