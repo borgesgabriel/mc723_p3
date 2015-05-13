@@ -44,11 +44,13 @@ export CC:=g++
 all: 
 	for c in $(COMPONENTS); do echo " => Making" $$c ...; \
 	    cd $$c; $(MAKE); cd ..; done
-	cd sw; make
+	cd sw; $(MAKE)
+	$(MAKE) $(EXE)
 
 clean:
 	rm -f $(OBJS) $(EXE) *~ *.o
 	for c in $(COMPONENTS); do echo " => Making" $$c ...; \
+	echo " ==> Making sw ..."
 	    cd $$c; $(MAKE) clean; cd ..; done	
 	cd sw ; make clean
 
