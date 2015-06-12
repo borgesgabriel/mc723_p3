@@ -40,51 +40,15 @@
 
 
 /// Constructor
-ac_tlm_mem::ac_tlm_mem( sc_module_name module_name , int k ) :
+ac_cores_controller::ac_cores_controller( sc_module_name module_name ) :
   sc_module( module_name ),
   target_export("iport")
 {
     /// Binds target_export to the cores_controller
     target_export( *this );
-
-    /// Initialize cores_controller vector
-    cores_controller = new uint8_t[ k ];
-    for(k=k-1;k>0;k--) cores_controller[k]=0;
-
 }
 
-/// Destructor
-ac_tlm_mem::~ac_tlm_mem() {
-
-  delete [] cores_controller;
-}
-
-/** Internal Write
-  * Note: Always write 32 bits
-  * @param a is the address to write
-  * @param d id the data being write
-  * @returns A TLM response packet with SUCCESS
-*/
-ac_tlm_rsp_status ac_tlm_mem::writem( const uint32_t &a , const uint32_t &d )
-{
-  *((uint32_t *) &cores_controller[a]) = *((uint32_t *) &d);
-  return SUCCESS;
-}
-
-/** Internal Read
-  * Note: Always read 32 bits
-  * @param a is the address to read
-  * @param d id the data that will be read
-  * @returns A TLM response packet with SUCCESS and a modified d
-*/
-ac_tlm_rsp_status ac_tlm_mem::readm( const uint32_t &a , uint32_t &d )
-{
-  *((uint32_t *) &d) = *((uint32_t *) &cores_controller[a]);
-
-  return SUCCESS;
-}
-
-bool ac_tlm_mem::set_core(bool on, int core_num) {
+bool ac_cores_controller::set_core(bool on, int core_num) {
   if (cores_on(core_num) == on) {
     return false;
   }
@@ -96,11 +60,11 @@ bool ac_tlm_mem::set_core(bool on, int core_num) {
   return true;
 }
 
-int ac_tlm_mem::number_of_cores() {
+int ac_cores_controller::number_of_cores() {
   return cores->size();
 }
 
-bool ac_tlm_mem::cores_on(int core_num) {
+bool ac_cores_controller::cores_on(int core_num) {
   return cores_on_.at(core_num);
 }
 

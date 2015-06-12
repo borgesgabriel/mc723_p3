@@ -62,6 +62,7 @@ public:
   /// Exposed port with ArchC interface
   sc_export<ac_tlm_transport_if> target_export;
   ac_tlm_port MEM_port;
+  ac_tlm_port CONTROLLER_port;
 
 
   /**

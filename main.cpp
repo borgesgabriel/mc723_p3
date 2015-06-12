@@ -33,6 +33,7 @@ int sc_main(int ac, char *av[])
   ac_tlm_bus bus("bus");
 // Memory
   ac_tlm_mem mem("mem");
+  ac_cores_controller controller("controller");
 
 #ifdef AC_DEBUG
   ac_trace("mips1_proc1.trace");
@@ -40,6 +41,7 @@ int sc_main(int ac, char *av[])
 
   mips_proc1.DM_port(bus.target_export);
   bus.MEM_port(mem.target_export);
+  bus.
 
   mips_proc1.init(ac, av);
   cerr << endl;
