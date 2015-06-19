@@ -49,11 +49,11 @@ ac_cores_controller::ac_cores_controller( sc_module_name module_name ) :
 }
 
 bool ac_cores_controller::set_core(bool on, int core_num) {
-  if (cores_on(core_num) == on) {
+  if (is_core_on(core_num) == on) {
     return false;
   }
   if (on) {
-    cores->at(core_num).init();
+    cores->at(core_num).init(); //TODO FIX
   } else {
     cores->at(core_num).stop();
   }
@@ -64,7 +64,7 @@ int ac_cores_controller::number_of_cores() {
   return cores->size();
 }
 
-bool ac_cores_controller::cores_on(int core_num) {
+bool ac_cores_controller::is_core_on(int core_num) {
   return cores_on_.at(core_num);
 }
 

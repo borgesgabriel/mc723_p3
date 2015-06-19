@@ -53,6 +53,10 @@ using tlm::tlm_transport_if;
 
 //#define DEBUG
 
+#define NUMBER_OF_CORES_REQUEST 0x3f3f3f3f
+#define ADDRESS_CORE_ZERO_READ 0x1
+#define ADDRESS_CORE_ZERO_WRITE 0x2
+
 
 /// A TLM cores_controller
 class ac_cores_controller :
@@ -62,10 +66,54 @@ class ac_cores_controller :
 public:
   bool set_core(bool on, int core);
   int number_of_cores();
-  bool cores_on(int core_num);
+  bool is_core_on(int core_num);
 
   /// Exposed port with ArchC interface
   sc_export< ac_tlm_transport_if > target_export;
+
+  /**
+   * Implementation of TLM transport method that
+   * handles packets of the protocol doing appropriate actions.
+   * This method must be implemented (required by SystemC TLM).
+   * @param request is a received request packet
+   * @return A response packet to be send
+  */
+  ac_tlm_rsp transport( const ac_tlm_req &request ) {
+
+    ac_tlm_rsp response;
+
+    switch( request.type ) {
+    case READ :     // Packet is a READ one
+      #ifdef DEBUG  // Turn it on to print transport level messages
+    cout << "Transport READ at 0x" << hex << request.addr << " value ";
+    cout << response.data << endl;
+      #endif
+      // response.status = readm( request.addr , response.data );
+      response.status = SUCCESS;
+      if (request.addr == NUMBER_OF_CORES_REQUEST) {
+        response.data = number_of_cores();
+      } else { // check if core is on
+        response.data = is_core_on(request.addr - ADDRESS_CORE_ZERO_READ);
+      }
+      break;
+    case WRITE:     // Packet is a WRITE
+      #ifdef DEBUG
+    cout << "Transport WRITE at 0x" << hex << request.addr << " value ";
+    cout << request.data << endl;
+      #endif
+      // response.status = writem( request.addr , request.data );
+      response.status = set_core(
+        (request.addr - ADDRESS_CORE_ZERO_WRITE) / 2,
+        (request.addr - ADDRESS_CORE_ZERO_WRITE) % 2
+      ) ? SUCCESS : ERROR;
+      break;
+    default :
+      response.status = ERROR;
+      break;
+    }
+
+    return response;
+  }
 
   /**
    * Default constructor.

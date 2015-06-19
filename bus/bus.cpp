@@ -44,7 +44,7 @@ ac_tlm_bus::ac_tlm_bus(sc_module_name module_name):
   sc_module(module_name),
   target_export("iport"),
   MEM_port("MEM_port", 5242880U), // This is the memory port, assigned for 5MB
-  CONTROLLER_port("CONTROLLER_port", 5243080U)
+  CONTROLLER_port("CONTROLLER_port", 200U)
 {
     /// Binds target_export to the memory
     target_export(*this);
@@ -62,8 +62,11 @@ ac_tlm_bus::~ac_tlm_bus()
 ac_tlm_rsp ac_tlm_bus::transport(const ac_tlm_req &request) 
 {
     ac_tlm_rsp response;
-    
-    response = MEM_port->transport(request);
+    if (request.addr <= MAX_MEM_ADDRESS) {
+      response = MEM_port->transport(request);
+    } else {
+      response = CONTROLLER_port->transport(request);
+    }
 
     return response;
 }

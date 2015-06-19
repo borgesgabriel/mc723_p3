@@ -19,16 +19,30 @@ const char *project_file="mips1.ac";
 const char *archc_version="2.0beta1";
 const char *archc_options="-abi -dy ";
 
+#include <cstring>
+
+#include <vector>
+#include <new>
+#include <string>
 #include <systemc.h>
 #include "mips.H"
 #include "memory.h"
+#include "cores_controller.h"
 #include "bus.h"
+
+#define NUMBER_OF_CORES 2
 
 int sc_main(int ac, char *av[])
 {
 
   //!  ISA simulator
-  mips mips_proc1("mips");
+  char cores_bytes[NUMBER_OF_CORES * sizeof(mips)];
+  std::vector<mips*> cores(NUMBER_OF_CORES);
+  for(int i = 0; i < NUMBER_OF_CORES; ++i) {
+    cores[i] = new((void*)(cores_bytes + i * sizeof(mips))) mips((std::string("mips") + std::to_string(i)).c_str());
+  }
+  // mips mips_proc1("mips");
+
   //! Bus
   ac_tlm_bus bus("bus");
 // Memory
@@ -39,16 +53,26 @@ int sc_main(int ac, char *av[])
   ac_trace("mips1_proc1.trace");
 #endif 
 
-  mips_proc1.DM_port(bus.target_export);
   bus.MEM_port(mem.target_export);
-  bus.
+  bus.CONTROLLER_port(controller.target_export);
 
-  mips_proc1.init(ac, av);
+  for (auto core : cores) {
+    core->DM_port(bus.target_export);
+    auto ac_copy = ac;
+    char** av_copy = new char*[ac];
+    for (int i = 0; i != ac; ++i) {
+      av_copy[i] = new char[strlen(av[i]) + 1];
+      std::strcpy(av_copy[i], av[i]);
+    }
+    core->init(ac_copy, av_copy);
+    core->ISA.PauseProcessor();
+  }
+  cores[0]->ISA.ResumeProcessor();
   cerr << endl;
 
   sc_start();
 
-  mips_proc1.PrintStat();
+  cores[0]->PrintStat();
   cerr << endl;
 
 #ifdef AC_STATS
@@ -60,5 +84,5 @@ int sc_main(int ac, char *av[])
   ac_close_trace();
 #endif 
 
-  return mips_proc1.ac_exit_status;
+  return cores[0]->ac_exit_status;
 }

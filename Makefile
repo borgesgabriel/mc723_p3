@@ -33,7 +33,7 @@ export LIBFILES:= $(foreach c, $(COMPONENTS), $(c)/lib$(c).a)
 
 export CFLAGS:=-g
 
-export CC:=g++
+export CC:=g++ --std=c++11
 
 
 
