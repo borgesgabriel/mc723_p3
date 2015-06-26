@@ -51,9 +51,9 @@ using tlm::tlm_transport_if;
 
 //////////////////////////////////////////////////////////////////////////////
 
-//#define DEBUG
+// #define DEBUG
 
-#define NUMBER_OF_CORES_REQUEST 0x3f3f3f3f
+#define NUMBER_OF_CORES_REQUEST 5242980
 #define ADDRESS_CORE_ZERO_READ 0x1
 #define ADDRESS_CORE_ZERO_WRITE 0x2
 
@@ -85,8 +85,8 @@ public:
     switch( request.type ) {
     case READ :     // Packet is a READ one
       #ifdef DEBUG  // Turn it on to print transport level messages
-    cout << "Transport READ at 0x" << hex << request.addr << " value ";
-    cout << response.data << endl;
+        cout << "Transport READ at 0x" << hex << request.addr << " value ";
+        cout << response.data << endl;
       #endif
       // response.status = readm( request.addr , response.data );
       response.status = SUCCESS;
@@ -121,10 +121,10 @@ public:
    * @param k cores_controller size in kilowords.
    *
    */
-  ac_cores_controller( sc_module_name module_name );
+  ac_cores_controller( sc_module_name module_name, std::vector<mips*>* cores_ptr );
 
 private:
-  std::vector<mips>* cores;
+  std::vector<mips*>* cores;
   std::vector<bool> cores_on_;
 
 };

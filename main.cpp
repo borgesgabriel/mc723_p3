@@ -30,7 +30,7 @@ const char *archc_options="-abi -dy ";
 #include "cores_controller.h"
 #include "bus.h"
 
-#define NUMBER_OF_CORES 2
+#define NUMBER_OF_CORES 8
 
 int sc_main(int ac, char *av[])
 {
@@ -47,7 +47,7 @@ int sc_main(int ac, char *av[])
   ac_tlm_bus bus("bus");
 // Memory
   ac_tlm_mem mem("mem");
-  ac_cores_controller controller("controller");
+  ac_cores_controller controller("controller", &cores);
 
 #ifdef AC_DEBUG
   ac_trace("mips1_proc1.trace");

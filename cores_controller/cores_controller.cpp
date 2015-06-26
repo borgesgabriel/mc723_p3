@@ -40,10 +40,11 @@
 
 
 /// Constructor
-ac_cores_controller::ac_cores_controller( sc_module_name module_name ) :
+ac_cores_controller::ac_cores_controller( sc_module_name module_name, std::vector<mips*>* cores_ptr ) :
   sc_module( module_name ),
   target_export("iport")
 {
+    cores = cores_ptr;
     /// Binds target_export to the cores_controller
     target_export( *this );
 }
@@ -53,9 +54,11 @@ bool ac_cores_controller::set_core(bool on, int core_num) {
     return false;
   }
   if (on) {
-    cores->at(core_num).init(); //TODO FIX
+    cores->at(core_num)->ISA.ResumeProcessor();
+    // cores->at(core_num).init(); //TODO FIX
   } else {
-    cores->at(core_num).stop();
+    cores->at(core_num)->ISA.PauseProcessor();
+    // cores->at(core_num).stop();
   }
   return true;
 }
