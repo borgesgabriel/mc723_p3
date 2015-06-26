@@ -54,8 +54,8 @@ using tlm::tlm_transport_if;
 // #define DEBUG
 
 #define NUMBER_OF_CORES_REQUEST 5242980
-#define ADDRESS_CORE_ZERO_READ 0x1
-#define ADDRESS_CORE_ZERO_WRITE 0x2
+#define ADDRESS_CORE_ZERO_READ 5242981
+#define ADDRESS_CORE_ZERO_WRITE 5243080
 
 
 /// A TLM cores_controller
@@ -88,7 +88,6 @@ public:
         cout << "Transport READ at 0x" << hex << request.addr << " value ";
         cout << response.data << endl;
       #endif
-      // response.status = readm( request.addr , response.data );
       response.status = SUCCESS;
       if (request.addr == NUMBER_OF_CORES_REQUEST) {
         response.data = number_of_cores();
@@ -101,10 +100,9 @@ public:
     cout << "Transport WRITE at 0x" << hex << request.addr << " value ";
     cout << request.data << endl;
       #endif
-      // response.status = writem( request.addr , request.data );
       response.status = set_core(
-        (request.addr - ADDRESS_CORE_ZERO_WRITE) / 2,
-        (request.addr - ADDRESS_CORE_ZERO_WRITE) % 2
+        (request.addr - ADDRESS_CORE_ZERO_WRITE) % 2,
+        (request.addr - ADDRESS_CORE_ZERO_WRITE) / 2
       ) ? SUCCESS : ERROR;
       break;
     default :

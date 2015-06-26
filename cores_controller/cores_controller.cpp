@@ -45,6 +45,8 @@ ac_cores_controller::ac_cores_controller( sc_module_name module_name, std::vecto
   target_export("iport")
 {
     cores = cores_ptr;
+    cores_on_.resize(number_of_cores());
+    cores_on_[0] = true;
     /// Binds target_export to the cores_controller
     target_export( *this );
 }
@@ -54,11 +56,11 @@ bool ac_cores_controller::set_core(bool on, int core_num) {
     return false;
   }
   if (on) {
+    cores_on_.at(core_num) = true;
     cores->at(core_num)->ISA.ResumeProcessor();
-    // cores->at(core_num).init(); //TODO FIX
   } else {
+    cores_on_.at(core_num) = false;
     cores->at(core_num)->ISA.PauseProcessor();
-    // cores->at(core_num).stop();
   }
   return true;
 }
