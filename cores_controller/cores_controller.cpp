@@ -52,7 +52,7 @@ ac_cores_controller::ac_cores_controller( sc_module_name module_name, std::vecto
 }
 
 bool ac_cores_controller::set_core(bool on, int core_num) {
-  if (is_core_on(core_num) == on) {
+  if (is_core_on(core_num) == on || core_num < 0 || core_num >= number_of_cores()) {
     return false;
   }
   if (on) {
@@ -70,6 +70,9 @@ int ac_cores_controller::number_of_cores() {
 }
 
 bool ac_cores_controller::is_core_on(int core_num) {
+  if (core_num < 0 || core_num >= number_of_cores()) {
+    return 0;
+  }
   return cores_on_.at(core_num);
 }
 

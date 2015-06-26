@@ -3,25 +3,25 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#define NUMBER_OF_CORES_REQUEST 5242980
-#define ADDRESS_CORE_ZERO_READ 5242981
-#define ADDRESS_CORE_ZERO_WRITE 5243080
+#define NUMBER_OF_CORES_REQUEST 115242980
+#define ADDRESS_CORE_ZERO_READ 115242981
+#define ADDRESS_CORE_ZERO_WRITE 115243080
 
 #define bool char
 
 void set_core(bool on, int core_num) {
-  uint32_t* p = (uint32_t*) (ADDRESS_CORE_ZERO_WRITE + 2 * core_num + on);
+  uint32_t volatile* p = (uint32_t volatile*) (ADDRESS_CORE_ZERO_WRITE + 2 * core_num + on);
   *p = on;
 }
 
 uint32_t number_of_cores() {
-  uint32_t* p = (uint32_t*) NUMBER_OF_CORES_REQUEST;
-  return *((uint32_t *) p) >> 24; // número de "zeros" a serem cortados
+  uint32_t volatile* p = (uint32_t volatile*) NUMBER_OF_CORES_REQUEST;
+  return *p >> 24; // número de "zeros" a serem cortados
 }
 
 bool is_core_on(int core_num) {
-  uint32_t* p = (uint32_t*) (ADDRESS_CORE_ZERO_READ + core_num);
-  return (bool)(*((uint32_t *) p) >> 24);
+  uint32_t volatile* p = (uint32_t volatile*) (ADDRESS_CORE_ZERO_READ + core_num);
+  return (bool)(*p >> 24);
 }
 
 
@@ -33,8 +33,8 @@ int main(int argc, char *argv[]){
   for(i=0;i<8;++i)
     printf("%" PRIu32 " ", is_core_on(i));
   printf("\n");
-  set_core(1, 1);
-  // set_core(0, 1);
+  for(i=1;i<8;++i)
+    set_core(1,i);
   for(i=0;i<8;++i)
     printf("%" PRIu32 " ", is_core_on(i));
   printf("\n");  
