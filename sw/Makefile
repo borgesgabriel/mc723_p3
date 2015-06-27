@@ -3,7 +3,7 @@
 # ####################################################
 
 CC = mips-elf-gcc
-CFLAGS = -msoft-float -specs=archc
+CFLAGS = -msoft-float -specs=archc -mips32
 LDFLAGS = -lm
 
 TARGET = hello_world.mips

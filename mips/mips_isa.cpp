@@ -51,6 +51,19 @@ void mips_isa::ResumeProcessor()
   pause = 0;
 }
 
+class Sync {
+private:
+  static unsigned history;
+public:
+  static void setHistory(unsigned history) {
+    Sync::history = history;
+  }
+  static unsigned getHistory() {
+    return history;
+  }
+};
+
+unsigned Sync::history = 0;
 
 //!Generic instruction behavior method.
 void ac_behavior( instruction )
@@ -159,6 +172,14 @@ void ac_behavior( lhu )
   dbg_printf("Result = %#x\n", RB[rt]);
 };
 
+//!Instruction ll behavior method.
+void ac_behavior ( ll ) {
+  dbg_printf("ll r%d, %d(r%d)\n", rt, imm & 0xFFFF, rs);
+  RB[rt] = DM.read(RB[rs]+ imm);
+  Sync::setHistory(RB[rt]);
+  dbg_printf("Result = %#x\n", RB[rt]);
+}
+
 //!Instruction lw behavior method.
 void ac_behavior( lw )
 {
@@ -215,6 +236,21 @@ void ac_behavior( sb )
   DM.write(address & ~3, data);
   
   dbg_printf("Result = %#x\n", (int) byte);
+};
+
+//!Instruction sc behavior method.
+void ac_behavior( sc ) {
+  unsigned address = RB[rs] + imm;
+  auto current = DM.read(address);
+  unsigned LL = Sync::getHistory() == current;
+
+  dbg_printf("sc r%d, %d(r%d)\n", rt, imm & 0xFFFF, rs);
+  if (LL) {
+   DM.write(address, RB[rt]);
+  }
+  dbg_printf("Result = %#x\n", RB[rt]);
+
+  RB[rt] = LL;
 };
 
 //!Instruction sh behavior method.
