@@ -6,10 +6,10 @@ CC = mips-elf-gcc
 CFLAGS = -msoft-float -specs=archc -mips32
 LDFLAGS = -lm
 
-TARGET = hello_world.mips
+TARGET = pi.mips
 INC_DIR := -I.
 
-SRCS := hello_world.c
+SRCS := pi.c
 OBJS := $(SRCS:.c=.o)
 
 #------------------------------------------------------

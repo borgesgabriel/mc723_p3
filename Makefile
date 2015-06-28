@@ -35,7 +35,10 @@ export CFLAGS:=-g
 
 export CC:=g++ --std=c++11
 
-
+# Number of intervals. The higher the number, the more precise the result is
+I := 100
+# Number of threads. The higher the number, the faster the computation is
+T := 1
 
 all: 
 	for c in $(COMPONENTS); do echo " => Making" $$c ...; \
@@ -66,8 +69,10 @@ main.o:
 #------------------------------------------------------
 #all: $(EXE)
 #------------------------------------------------------
+# How to specify I and T parameters:
+# make run I=2 T=4
 run: $(EXE)
-	./$(EXE) --load=sw/hello_world.mips
+	./$(EXE) --load=sw/pi.mips $(I) $(T)
 #------------------------------------------------------
 debug: $(EXE)
 	gdb $(EXE)
