@@ -45,7 +45,8 @@ all:
 	for c in $(COMPONENTS); do echo " => Making" $$c ...; \
 	    cd $$c; $(MAKE); cd ..; done
 	echo " => Making sw ..."
-	cd sw; $(MAKE)
+	cd sw/hello_world; $(MAKE)
+	cd sw/pi; $(MAKE)
 	echo " => Making platform ..."
 	$(MAKE) $(EXE)
 
@@ -53,7 +54,8 @@ clean:
 	for c in $(COMPONENTS); do echo " => Making" $$c ...; \
 	    cd $$c; $(MAKE) clean; cd ..; done
 	echo " => Making sw ..."
-	cd sw ; $(MAKE) clean
+	cd sw/hello_world; $(MAKE) clean
+	cd sw/pi; $(MAKE) clean
 	echo " => Making platform ..."
 	rm -f $(OBJS) $(EXE) *~ *.o
 
@@ -71,9 +73,12 @@ main.o:
 #all: $(EXE)
 #------------------------------------------------------
 # How to specify I and T parameters:
-# make run I=2 T=4
-run: $(EXE)
-	./$(EXE) --load=sw/pi.mips $(I) $(T)
+# make pi I=2 T=4
+pi: clean all $(EXE)
+	./$(EXE) --load=sw/pi/pi.mips $(I) $(T)
+#------------------------------------------------------
+hw: clean all $(EXE)
+	./$(EXE) --load=sw/hello_world/hello_world.mips
 #------------------------------------------------------
 debug: $(EXE)
 	gdb $(EXE)
