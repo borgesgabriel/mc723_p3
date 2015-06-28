@@ -1,6 +1,6 @@
-/* pi.c - parallel C code to demonstrate Linux thread interface 
- * Original Source: www.tldp.org/HOWTP/Parallel_processing-HOWTO 
- * Since PI == 4 * arctan(1), and arctan(x) is the 
+/* pi.c - parallel C code to demonstrate Linux thread interface
+ * Original Source: www.tldp.org/HOWTP/Parallel_processing-HOWTO
+ * Since PI == 4 * arctan(1), and arctan(x) is the
  *  integral from 0 to x of (1/(1+x*x),
  *  the for loop below approximates that integration.
  * Generalized by: Joel Adams
@@ -9,7 +9,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "mypthread.h" 
+#include "mypthread.h"
 
 /* global variables (shared by all threads */
 volatile long double pi = 0.0; /* the approximation, to 31 sigfigs */
@@ -35,14 +35,14 @@ void *computePI(void *id)
         localSum += 4.0 / (1.0 + x*x);
     }
 
-    localSum *= width; 
+    localSum *= width;
 
     pthread_mutex_lock(&piLock);
     pi += localSum;
-    pthread_mutex_unlock(&piLock); 
+    pthread_mutex_unlock(&piLock);
 
     return NULL;
-} 
+}
 
 int main(int argc, char **argv)
 {
@@ -52,9 +52,9 @@ int main(int argc, char **argv)
     int i;                     /* loop control variable */
 
    if (argc == 3) {
-      intervals = atoi(argv[1]); 
-      numThreads = atoi(argv[2]); 
-      
+      intervals = atoi(argv[1]);
+      numThreads = atoi(argv[2]);
+
       threads = malloc(numThreads*sizeof(pthread_t));
       threadID = malloc(numThreads*sizeof(int));
       pthread_mutex_init(&piLock, NULL);
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
       printf("Estimation of pi is %32.30Lf \n", pi);
       printf("(actual pi value is 3.141592653589793238462643383279...)\n");
     } else {
-      printf("Usage: ./a.out <numIntervals> <numThreads>");    
+      printf("Usage: ./a.out <numIntervals> <numThreads>");
     }
 
     return 0;

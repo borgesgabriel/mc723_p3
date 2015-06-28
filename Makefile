@@ -25,7 +25,7 @@ export LIB_DIR:=-L $(SYSTEMC)/lib-$(HOST_OS) \
 export INC_DIR:=-I $(SYSTEMC)/include \
 		-I $(ARCHC_PATH)/include/archc \
 		-I $(TLM_PATH) \
-		$(foreach c, $(COMPONENTS), -I $(c)) 
+		$(foreach c, $(COMPONENTS), -I $(c))
 
 export LIBS:= $(foreach c, $(COMPONENTS), -l$(c)) -lsystemc -larchc -lm
 
@@ -35,12 +35,13 @@ export CFLAGS:=-g
 
 export CC:=g++ --std=c++11
 
+
 # Number of intervals. The higher the number, the more precise the result is
 I := 100
 # Number of threads. The higher the number, the faster the computation is
 T := 1
 
-all: 
+all:
 	for c in $(COMPONENTS); do echo " => Making" $$c ...; \
 	    cd $$c; $(MAKE); cd ..; done
 	echo " => Making sw ..."
@@ -50,7 +51,7 @@ all:
 
 clean:
 	for c in $(COMPONENTS); do echo " => Making" $$c ...; \
-	    cd $$c; $(MAKE) clean; cd ..; done	
+	    cd $$c; $(MAKE) clean; cd ..; done
 	echo " => Making sw ..."
 	cd sw ; $(MAKE) clean
 	echo " => Making platform ..."
