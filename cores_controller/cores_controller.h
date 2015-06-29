@@ -54,7 +54,7 @@ using tlm::tlm_transport_if;
 // #define DEBUG
 
 #define NUMBER_OF_CORES_REQUEST 115242980
-#define ADDRESS_CORE_ZERO_READ 115242981
+#define ADDRESS_CORE_ZERO_READ 115242984
 #define ADDRESS_CORE_ZERO_WRITE 115243080
 
 
@@ -92,7 +92,7 @@ public:
       if (request.addr == NUMBER_OF_CORES_REQUEST) {
         response.data = number_of_cores();
       } else { // check if core is on
-        response.data = is_core_on(request.addr - ADDRESS_CORE_ZERO_READ);
+        response.data = is_core_on((request.addr - ADDRESS_CORE_ZERO_READ) / 4);
       }
       break;
     case WRITE:     // Packet is a WRITE
@@ -100,10 +100,9 @@ public:
     cout << "Transport WRITE at 0x" << hex << request.addr << " value ";
     cout << request.data << endl;
       #endif
-      // cout << "Just got on=" << (request.addr - ADDRESS_CORE_ZERO_WRITE) % 2 << ", core_num=" <<  (request.addr - ADDRESS_CORE_ZERO_WRITE) / 2 << endl;
       response.status = set_core(
-        (request.addr - ADDRESS_CORE_ZERO_WRITE) % 2,
-        (request.addr - ADDRESS_CORE_ZERO_WRITE) / 2
+        ((request.addr - ADDRESS_CORE_ZERO_WRITE) / 4) % 2,
+        (request.addr - ADDRESS_CORE_ZERO_WRITE) / 8
       ) ? SUCCESS : ERROR;
       break;
     default :

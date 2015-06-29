@@ -33,7 +33,7 @@ int store_conditional(int* ptr, int value) {
 }
 
 void set_core(bool on, int core_num) {
-  uint32_t volatile* p = (uint32_t volatile*) (ADDRESS_CORE_ZERO_WRITE + 2 * core_num + on);
+  uint32_t volatile* p = (uint32_t volatile*) (ADDRESS_CORE_ZERO_WRITE + 4 * (2 * core_num + on));
   *p = on;
 }
 
@@ -43,7 +43,7 @@ uint32_t number_of_cores() {
 }
 
 bool is_core_on(int core_num) {
-  uint32_t volatile* p = (uint32_t volatile*) (ADDRESS_CORE_ZERO_READ + core_num);
+  uint32_t volatile* p = (uint32_t volatile*) (ADDRESS_CORE_ZERO_READ + 4 * core_num);
   return (bool)(*p >> 24);
 }
 

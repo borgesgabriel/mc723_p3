@@ -18,9 +18,16 @@ int numThreads;                /* how many threads we use */
 /* the function a thread executes
  * Parameters: arg, a void* storing the address of the thread ID.
  */
- void *computePI(void *id) {
+void *computePI(void *id) {
   long double x, width, localSum = 0;
   int i, threadID = *((int*)id);
+
+  /**
+   * Hardware offloading should replace 'for' loop below, as it is clearly
+   * the bottleneck of the computePI operation.
+   * Function should be called in the format:
+   * pi_loop(threadID, intervals, numThreads, localSum);
+   */
 
   width = 1.0 / intervals;
 
