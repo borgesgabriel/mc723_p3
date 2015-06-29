@@ -53,6 +53,12 @@ int pi_main(int argc, char **argv)
       intervals = atoi(argv[1]);
       numThreads = atoi(argv[2]);
 
+      if (numThreads < 1 || numThreads > MAXIMUM_NO_THREADS) {
+        printf("Invalid number of threads. Number of threads should"
+               " be between 1 and %d.\n", MAXIMUM_NO_THREADS);
+        return 0;
+      }
+
       threads = malloc(numThreads*sizeof(pthread_t));
       threadID = malloc(numThreads*sizeof(int));
       pthread_mutex_init(&piLock, NULL);

@@ -9,43 +9,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-/* macros*/
-
-#define MAXIMUM_NO_THREADS 8
-#define NUMBER_OF_CORES_REQUEST 115242980
-#define ADDRESS_CORE_ZERO_READ 115242981
-#define ADDRESS_CORE_ZERO_WRITE 115243080
-
-#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
-
-/* typedefs */
-
-typedef char bool;
-typedef int pthread_t;
-typedef int pthread_mutex_t;
-
-typedef struct {
-} pthread_attr_t;
-
-typedef struct {
-} pthread_mutexattr_t;
-
-typedef struct {
-   void *(*start_routine) (void *);
-   void *arg;
-} processor_args_;
-
-/* global variables */
-
-int processor_number = 0;
-
-bool kill_processor[MAXIMUM_NO_THREADS];
-const bool true = 1;
-const bool false = 0;
-
-pthread_mutex_t processor_mutex = 0;
-
-processor_args_ processor_args[MAXIMUM_NO_THREADS];
+#include "mypthread_helper.h"
 
 /* helper functions */
 
@@ -91,15 +55,17 @@ void __init(int(*start_routine) (int, char**), int argc, char **argv) {
 int __run_processor(int pid) {
   if (!pid) {
     int i;
-    for (i = 1; i < MAXIMUM_NO_THREADS; ++i) {
+    for (i = 1; i <= MAXIMUM_NO_THREADS; ++i) {
       kill_processor[i] = true;
       set_core(true, i);
     }
     return 0;
   }
-  (*(processor_args[pid].start_routine))(processor_args[pid].arg);
-  set_core(false, pid);
-  return kill_processor[pid];
+  if (!kill_processor[pid]) {
+    (*(processor_args[pid].start_routine))(processor_args[pid].arg);
+    set_core(false, pid);
+  }
+  return !kill_processor[pid];
 }
 
 /* pthread functions */
@@ -109,18 +75,20 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
   int i;
 
   pthread_mutex_lock(&processor_mutex);
-  for (i = 0; i < MAXIMUM_NO_THREADS; ++i) {
+  /* Core 0 is busy with main */
+  for (i = 1; i <= MAXIMUM_NO_THREADS; ++i) {
     if (!is_core_on(i)) {
       processor_args[i].start_routine = start_routine;
       processor_args[i].arg = arg;
       *thread = i;
       set_core(true, i);
+      break;
     }
   }
   pthread_mutex_unlock(&processor_mutex);
 
-  /* if i == MAXIMUM_NO_THREADS, all cores are busy */
-  return i != MAXIMUM_NO_THREADS;
+  /* if i == 1 + MAXIMUM_NO_THREADS, all cores are busy */
+  return i != 1 + MAXIMUM_NO_THREADS;
 }
 
 int pthread_join(pthread_t thread, void **retval) {
