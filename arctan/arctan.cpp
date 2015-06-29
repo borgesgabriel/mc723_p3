@@ -48,18 +48,21 @@ ac_arctan::ac_arctan( sc_module_name module_name ) :
     target_export( *this );
 }
 
-void setThreadID(int core, int threadID){
+void setThreadID(int core, int threadID) {
 
 }
 
-void setIntervals(int core, int intervals){
+void setIntervals(int core, int intervals) {
 
 }
 
-void setNumThreads(int core, int numThreads){
+void setNumThreads(int core, int numThreads) {
 
 }
 
-double getResult(int core){
+/**
+ * Computes part of 4 * arctan(1).
+ */
+double getResult(int core) {
 
 }

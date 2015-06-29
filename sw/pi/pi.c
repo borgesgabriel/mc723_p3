@@ -9,34 +9,34 @@
 
 #include "../mypthread.h"
 
+#define kOffload false
+
 /* global variables (shared by all threads */
 volatile double pi = 0.0; /* the approximation, to 31 sigfigs */
 pthread_mutex_t piLock;        /* how we synchronize writes to 'pi' */
 double intervals;         /* how finely we chop the integration */
 int numThreads;                /* how many threads we use */
 
+double offload_arctan(int threadID, double intervals, int numThreads) {
+  if (kOffload) {
+
+  } else {
+    double localSum, x, width = 1.0 / intervals;
+    int i;
+    for(i = threadID; i < intervals; i += numThreads) {
+      x = (i + 0.5) * width;
+      localSum += 4.0 / (1.0 + x*x);
+    }
+    return localSum * width;
+  }
+  return 0.0;
+}
+
 /* the function a thread executes
  * Parameters: arg, a void* storing the address of the thread ID.
  */
 void *computePI(void *id) {
-  double x, width, localSum = 0;
-  int i, threadID = *((int*)id);
-
-  /**
-   * Hardware offloading should replace 'for' loop below, as it is clearly
-   * the bottleneck of the computePI operation.
-   * Function should be called in the format:
-   * pi_loop(threadID, intervals, numThreads);
-   */
-
-  width = 1.0 / intervals;
-
-  for(i = threadID; i < intervals; i += numThreads) {
-    x = (i + 0.5) * width;
-    localSum += 4.0 / (1.0 + x*x);
-  }
-
-  localSum *= width;
+  double localSum = offload_arctan(*((int*)id), intervals, numThreads);
 
   pthread_mutex_lock(&piLock);
   pi += localSum;
