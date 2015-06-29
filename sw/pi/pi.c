@@ -7,9 +7,7 @@
  * Usage: ./a.out <numIntervals> <numThreads>
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "mypthread.h"
+#include "../mypthread.h"
 
 /* global variables (shared by all threads */
 volatile long double pi = 0.0; /* the approximation, to 31 sigfigs */
@@ -44,7 +42,7 @@ void *computePI(void *id)
     return NULL;
 }
 
-int main(int argc, char **argv)
+int pi_main(int argc, char **argv)
 {
     pthread_t *threads;        /* dynarray of threads */
     void *retval;              /* unused; required for join() */
@@ -74,4 +72,19 @@ int main(int argc, char **argv)
     }
 
     return 0;
+}
+
+int main(int argc, char **argv) {
+  pthread_mutex_lock(&processor_mutex);
+  int pid = processor_number++;
+  pthread_mutex_unlock(&processor_mutex);
+
+  if (!pid) {
+    __init(pi_main, argc, argv);
+  }
+
+  while(__run_processor(pid));
+
+  exit(0);
+  return 0;
 }
