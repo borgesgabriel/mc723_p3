@@ -10,23 +10,23 @@
 #include "../mypthread.h"
 
 /* global variables (shared by all threads */
-volatile long double pi = 0.0; /* the approximation, to 31 sigfigs */
+volatile double pi = 0.0; /* the approximation, to 31 sigfigs */
 pthread_mutex_t piLock;        /* how we synchronize writes to 'pi' */
-long double intervals;         /* how finely we chop the integration */
+double intervals;         /* how finely we chop the integration */
 int numThreads;                /* how many threads we use */
 
 /* the function a thread executes
  * Parameters: arg, a void* storing the address of the thread ID.
  */
 void *computePI(void *id) {
-  long double x, width, localSum = 0;
+  double x, width, localSum = 0;
   int i, threadID = *((int*)id);
 
   /**
    * Hardware offloading should replace 'for' loop below, as it is clearly
    * the bottleneck of the computePI operation.
    * Function should be called in the format:
-   * pi_loop(threadID, intervals, numThreads, localSum);
+   * pi_loop(threadID, intervals, numThreads);
    */
 
   width = 1.0 / intervals;

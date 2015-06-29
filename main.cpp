@@ -11,7 +11,7 @@
  * IC-UNICAMP                                         *
  * http://www.lsc.ic.unicamp.br                       *
  ******************************************************/
- 
+
 // Rodolfo editou aqui
 //
 const char *project_name="mips";
@@ -28,6 +28,7 @@ const char *archc_options="-abi -dy ";
 #include "mips.H"
 #include "memory.h"
 #include "cores_controller.h"
+#include "arctan.h"
 #include "bus.h"
 
 #define NUMBER_OF_CORES 8
@@ -48,13 +49,15 @@ int sc_main(int ac, char *av[])
 // Memory
   ac_tlm_mem mem("mem");
   ac_cores_controller controller("controller", &cores);
+  ac_arctan arctan("arctan");
 
 #ifdef AC_DEBUG
   ac_trace("mips1_proc1.trace");
-#endif 
+#endif
 
   bus.MEM_port(mem.target_export);
   bus.CONTROLLER_port(controller.target_export);
+  bus.ARCTAN_port(arctan.target_export);
 
   for (auto core : cores) {
     core->DM_port(bus.target_export);
@@ -78,11 +81,11 @@ int sc_main(int ac, char *av[])
 #ifdef AC_STATS
   mips1_proc1.ac_sim_stats.time = sc_simulation_time();
   mips1_proc1.ac_sim_stats.print();
-#endif 
+#endif
 
 #ifdef AC_DEBUG
   ac_close_trace();
-#endif 
+#endif
 
   return cores[0]->ac_exit_status;
 }

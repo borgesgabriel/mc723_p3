@@ -44,7 +44,8 @@ ac_tlm_bus::ac_tlm_bus(sc_module_name module_name):
   sc_module(module_name),
   target_export("iport"),
   MEM_port("MEM_port", 5242880U), // This is the memory port, assigned for 5MB
-  CONTROLLER_port("CONTROLLER_port", 200U)
+  CONTROLLER_port("CONTROLLER_port", 200U),
+  ARCTAN_port("ARCTAN_port", 1000U)
 {
     /// Binds target_export to the memory
     target_export(*this);
@@ -52,20 +53,22 @@ ac_tlm_bus::ac_tlm_bus(sc_module_name module_name):
 }
 
 /// Destructor
-ac_tlm_bus::~ac_tlm_bus() 
+ac_tlm_bus::~ac_tlm_bus()
 {
 }
 
 /// This is the transport method. Everything should go through this file.
 /// To connect more components, you will need to have an if/then/else or a switch
 /// statement inside this method. Notice that ac_tlm_req has an address field.
-ac_tlm_rsp ac_tlm_bus::transport(const ac_tlm_req &request) 
+ac_tlm_rsp ac_tlm_bus::transport(const ac_tlm_req &request)
 {
     ac_tlm_rsp response;
     if (request.addr <= MAX_MEM_ADDRESS) {
       response = MEM_port->transport(request);
-    } else {
+    } else if (request.addr >= MIN_CONTROLLER_ADDRESS) {
       response = CONTROLLER_port->transport(request);
+    } else {
+      response = ARCTAN_port->transport(request);
     }
 
     return response;

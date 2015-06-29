@@ -1,5 +1,5 @@
 /**
- * @file      cores_controller.h
+ * @file      arctan.h
  * @author    Gabriel Borges
  *
  * @author    The ArchC Team
@@ -12,7 +12,7 @@
  * @version   0.1
  * @date      Sun, 02 Apr 2006 08:07:46 -0200
  *
- * @brief     Defines a ac_tlm cores_controller.
+ * @brief     Defines a ac_tlm arctan.
  *
  * @attention Copyright (C) 2002-2005 --- The ArchC Team
  *
@@ -31,8 +31,8 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef _cores_controller_H_
-#define _cores_controller_H_
+#ifndef _arctan_H_
+#define _arctan_H_
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -58,15 +58,16 @@ using tlm::tlm_transport_if;
 #define ADDRESS_CORE_ZERO_WRITE 115243080
 
 
-/// A TLM cores_controller
-class ac_cores_controller :
+/// A TLM arctan
+class ac_arctan :
   public sc_module,
   public ac_tlm_transport_if // Using ArchC TLM protocol
 {
 public:
-  bool set_core(bool on, int core);
-  int number_of_cores();
-  bool is_core_on(int core_num);
+  void setThreadID(int core, int threadID);
+  void setIntervals(int core, int intervals);
+  void setNumThreads(int core, int numThreads);
+  double getResult(int core);
 
   /// Exposed port with ArchC interface
   sc_export< ac_tlm_transport_if > target_export;
@@ -90,9 +91,9 @@ public:
       #endif
       response.status = SUCCESS;
       if (request.addr == NUMBER_OF_CORES_REQUEST) {
-        response.data = number_of_cores();
+        // response.data = number_of_cores();
       } else { // check if core is on
-        response.data = is_core_on((request.addr - ADDRESS_CORE_ZERO_READ) / 4);
+        // response.data = is_core_on((request.addr - ADDRESS_CORE_ZERO_READ) / 4);
       }
       break;
     case WRITE:     // Packet is a WRITE
@@ -100,10 +101,10 @@ public:
     cout << "Transport WRITE at 0x" << hex << request.addr << " value ";
     cout << request.data << endl;
       #endif
-      response.status = set_core(
-        ((request.addr - ADDRESS_CORE_ZERO_WRITE) / 4) % 2,
-        (request.addr - ADDRESS_CORE_ZERO_WRITE) / 8
-      ) ? SUCCESS : ERROR;
+      // response.status = set_core(
+      //   ((request.addr - ADDRESS_CORE_ZERO_WRITE) / 4) % 2,
+      //   (request.addr - ADDRESS_CORE_ZERO_WRITE) / 8
+      // ) ? SUCCESS : ERROR;
       break;
     default :
       response.status = ERROR;
@@ -116,15 +117,13 @@ public:
   /**
    * Default constructor.
    *
-   * @param k cores_controller size in kilowords.
+   * @param k arctan size in kilowords.
    *
    */
-  ac_cores_controller( sc_module_name module_name, std::vector<mips*>* cores_ptr );
+  ac_arctan( sc_module_name module_name );
 
 private:
-  std::vector<mips*>* cores;
-  std::vector<bool> cores_on_;
 
 };
 
-#endif //_cores_controller_H_
+#endif //_arctan_H_

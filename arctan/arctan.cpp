@@ -1,5 +1,5 @@
 /**
- * @file      cores_controller.cpp
+ * @file      arctan.cpp
  * @author    Gabriel Borges
  *
  * @author    The ArchC Team
@@ -12,7 +12,7 @@
  * @version   0.1
  * @date      Sun, 02 Apr 2006 08:07:46 -0200
  *
- * @brief     Implements a ac_tlm cores_controller.
+ * @brief     Implements a ac_tlm arctan.
  *
  * @attention Copyright (C) 2002-2005 --- The ArchC Team
  *
@@ -34,46 +34,32 @@
 // SystemC includes
 // ArchC includes
 
-#include "cores_controller.h"
+#include "arctan.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
 
 /// Constructor
-ac_cores_controller::ac_cores_controller( sc_module_name module_name, std::vector<mips*>* cores_ptr ) :
+ac_arctan::ac_arctan( sc_module_name module_name ) :
   sc_module( module_name ),
   target_export("iport")
 {
-    cores = cores_ptr;
-    cores_on_.resize(number_of_cores());
-    cores_on_[0] = true;
-    /// Binds target_export to the cores_controller
+    /// Binds target_export to the arctan
     target_export( *this );
 }
 
-bool ac_cores_controller::set_core(bool on, int core_num) {
-  if (is_core_on(core_num) == on || core_num < 0 || core_num >= number_of_cores()) {
-    return false;
-  }
-  if (on) {
-    cores_on_.at(core_num) = true;
-    cores->at(core_num)->ISA.ResumeProcessor();
-  } else {
-    cores_on_.at(core_num) = false;
-    cores->at(core_num)->ISA.PauseProcessor();
-  }
-  return true;
+void setThreadID(int core, int threadID){
+
 }
 
-int ac_cores_controller::number_of_cores() {
-  return cores->size();
+void setIntervals(int core, int intervals){
+
 }
 
-bool ac_cores_controller::is_core_on(int core_num) {
-  if (core_num < 0 || core_num >= number_of_cores()) {
-    return 0;
-  }
-  return cores_on_.at(core_num);
+void setNumThreads(int core, int numThreads){
+
 }
 
+double getResult(int core){
 
+}
