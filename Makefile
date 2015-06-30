@@ -58,6 +58,7 @@ clean:
 	cd sw/pi; $(MAKE) clean
 	echo " => Making platform ..."
 	rm -f $(OBJS) $(EXE) *~ *.o
+	rm -f core*.*
 
 #------------------------------------------------------
 .SILENT:

@@ -48,21 +48,42 @@ ac_arctan::ac_arctan( sc_module_name module_name ) :
     target_export( *this );
 }
 
-void setThreadID(int core, int threadID) {
-
-}
-
-void setIntervals(int core, int intervals) {
-
-}
-
-void setNumThreads(int core, int numThreads) {
-
-}
-
 /**
- * Computes part of 4 * arctan(1).
+ * Computes part of 4 * arctan(1). READ function.
  */
-double getResult(int core) {
+uint32_t ac_arctan::getResult(int core) {
+  char f_in[50], f_out[50];
+  int threadID, numThreads;
+  long double intervals;
+  FILE *fp;
 
+  sprintf(f_in, "core%d.out", core);
+  if (OFFLOAD_DEBUG) {
+    printf("system reading from %s\n", f_in);
+  }
+  fp = fopen(f_in, "r");
+  fscanf(fp, "%d %d %Lf", &threadID, &numThreads, &intervals);
+  fclose(fp);
+  if (OFFLOAD_DEBUG) {
+    printf("%d %d %Lf\n", threadID, numThreads, intervals);
+  }
+
+  long double localSum = 0, x, width = 1.0 / intervals;
+  int i;
+  for(i = threadID; i < intervals; i += numThreads) {
+    x = (i + 0.5) * width;
+    localSum += 4.0 / (1.0 + x*x);
+  }
+  if (OFFLOAD_DEBUG) {
+    cout << localSum << " " << width << " " << localSum*width << endl;
+  }
+
+  sprintf(f_out, "core%d.in", core);
+  if (OFFLOAD_DEBUG) {
+    printf("system writing to %s\n", f_out);
+  }
+  fp = fopen(f_out, "w+");
+  fprintf(fp, "%32.30Lf\n", localSum * width);
+  fclose(fp);
+  return 0;
 }

@@ -47,6 +47,43 @@ bool is_core_on(int core_num) {
   return (bool)(*p >> 24);
 }
 
+long double read_piargs(int threadID) {
+  int address = GET_RESULT_REQUEST + 4 * threadID;
+  uint32_t volatile* p = (uint32_t volatile*) address;
+  uint32_t volatile compute = *p;
+
+  int i;
+  for (i = 0; i < 100000; ++i);
+
+  char filename[50];
+  long double result;
+
+  sprintf(filename, "core%d.in", threadID);
+  if (OFFLOAD_DEBUG) {
+    printf("piargs reading from %s\n", filename);
+  }
+  FILE *fp = fopen(filename, "r");
+  fscanf(fp, "%Lf\n", &result);
+  fclose(fp);
+
+  return result;
+}
+
+void write_piargs(int threadID, double intervals, int numThreads) {
+  char filename[50];
+
+  sprintf(filename, "core%d.out", threadID);
+  if (OFFLOAD_DEBUG) {
+    printf("piargs writing on %s\n"
+           "content: %d %d %32.30Lf\n", filename, threadID, numThreads, intervals);
+  } else { /* Pure, untainted dark magic. */
+    printf(" ");
+  }
+  FILE *fp = fopen(filename, "w+");
+  fprintf(fp, "%d %d %32.30Lf\n", threadID, numThreads, intervals);
+  fclose(fp);
+}
+
 void __init(int(*start_routine) (int, char**), int argc, char **argv) {
   memset(kill_processor, false, sizeof kill_processor);
   (*start_routine)(argc, argv);
@@ -103,7 +140,10 @@ int pthread_mutex_init(pthread_mutex_t *mutex,
 }
 
 int pthread_mutex_lock(pthread_mutex_t *mutex) {
-  while (load_linked(mutex) || !store_conditional(mutex, 1));
+  while (load_linked(mutex) || !store_conditional(mutex, 1)) {
+    // int i;
+    // for (i = 0; i < 1000; ++i);
+  }
   return 0;
 }
 

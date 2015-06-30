@@ -9,34 +9,39 @@
 
 #include "../mypthread.h"
 
-#define kOffload false
+#define kOffload true
 
 /* global variables (shared by all threads */
-volatile double pi = 0.0; /* the approximation, to 31 sigfigs */
+volatile long double pi = 0.0; /* the approximation, to 31 sigfigs */
 pthread_mutex_t piLock;        /* how we synchronize writes to 'pi' */
-double intervals;         /* how finely we chop the integration */
+long double intervals;         /* how finely we chop the integration */
 int numThreads;                /* how many threads we use */
+ pthread_mutex_t ah = 0;
 
-double offload_arctan(int threadID, double intervals, int numThreads) {
+long double offload_arctan(int threadID, long double intervals, int numThreads) {
+  long double result;
   if (kOffload) {
-
+    pthread_mutex_lock(&ah);
+    write_piargs(threadID, intervals, numThreads);
+    result = read_piargs(threadID);
+    pthread_mutex_unlock(&ah);
   } else {
-    double localSum, x, width = 1.0 / intervals;
+    long double localSum = 0, x, width = 1.0 / intervals;
     int i;
-    for(i = threadID; i < intervals; i += numThreads) {
+    for (i = threadID; i < intervals; i += numThreads) {
       x = (i + 0.5) * width;
       localSum += 4.0 / (1.0 + x*x);
     }
-    return localSum * width;
+    result = localSum * width;
   }
-  return 0.0;
+  return result;
 }
 
 /* the function a thread executes
  * Parameters: arg, a void* storing the address of the thread ID.
  */
 void *computePI(void *id) {
-  double localSum = offload_arctan(*((int*)id), intervals, numThreads);
+  long double localSum = offload_arctan(*((int*)id), intervals, numThreads);
 
   pthread_mutex_lock(&piLock);
   pi += localSum;
@@ -61,6 +66,10 @@ int pi_main(int argc, char **argv) {
     return 0;
   }
 
+  if (kOffload && !OFFLOAD_DEBUG && numThreads > 2) {
+    numThreads = 2;
+  }
+
   threads = malloc(numThreads*sizeof(pthread_t));
   threadID = malloc(numThreads*sizeof(int));
   pthread_mutex_init(&piLock, NULL);
@@ -73,7 +82,7 @@ int pi_main(int argc, char **argv) {
   for (i = 0; i < numThreads; i++) {
    pthread_join(threads[i], &retval);
  }
- printf("Estimation of pi is %32.30Lf \n", pi);
+ printf("\nEstimation of pi is %32.30Lf \n", pi);
  printf("(actual pi value is 3.141592653589793238462643383279...)\n");
 } else {
   printf("Usage: ./a.out <numIntervals> <numThreads>");

@@ -53,9 +53,9 @@ using tlm::tlm_transport_if;
 
 // #define DEBUG
 
-#define NUMBER_OF_CORES_REQUEST 115242980
-#define ADDRESS_CORE_ZERO_READ 115242984
-#define ADDRESS_CORE_ZERO_WRITE 115243080
+#define MAXIMUM_NUMBER_OF_CORES 8
+#define GET_RESULT_REQUEST 15242980
+#define OFFLOAD_DEBUG 0
 
 
 /// A TLM arctan
@@ -67,7 +67,7 @@ public:
   void setThreadID(int core, int threadID);
   void setIntervals(int core, int intervals);
   void setNumThreads(int core, int numThreads);
-  double getResult(int core);
+  uint32_t getResult(int core);
 
   /// Exposed port with ArchC interface
   sc_export< ac_tlm_transport_if > target_export;
@@ -84,27 +84,24 @@ public:
     ac_tlm_rsp response;
 
     switch( request.type ) {
-    case READ :     // Packet is a READ one
+    case READ : {    // Packet is a READ one
       #ifdef DEBUG  // Turn it on to print transport level messages
         cout << "Transport READ at 0x" << hex << request.addr << " value ";
         cout << response.data << endl;
       #endif
       response.status = SUCCESS;
-      if (request.addr == NUMBER_OF_CORES_REQUEST) {
-        // response.data = number_of_cores();
-      } else { // check if core is on
-        // response.data = is_core_on((request.addr - ADDRESS_CORE_ZERO_READ) / 4);
+      int core_number = (request.addr - GET_RESULT_REQUEST) / 4;
+      if (core_number < MAXIMUM_NUMBER_OF_CORES) {
+        response.data = getResult(core_number);
       }
       break;
+    }
     case WRITE:     // Packet is a WRITE
       #ifdef DEBUG
     cout << "Transport WRITE at 0x" << hex << request.addr << " value ";
     cout << request.data << endl;
       #endif
-      // response.status = set_core(
-      //   ((request.addr - ADDRESS_CORE_ZERO_WRITE) / 4) % 2,
-      //   (request.addr - ADDRESS_CORE_ZERO_WRITE) / 8
-      // ) ? SUCCESS : ERROR;
+      response.status = ERROR;
       break;
     default :
       response.status = ERROR;
@@ -116,14 +113,8 @@ public:
 
   /**
    * Default constructor.
-   *
-   * @param k arctan size in kilowords.
-   *
    */
   ac_arctan( sc_module_name module_name );
-
-private:
-
 };
 
 #endif //_arctan_H_

@@ -7,6 +7,8 @@
 #define NUMBER_OF_CORES_REQUEST 115242980
 #define ADDRESS_CORE_ZERO_READ 115242984
 #define ADDRESS_CORE_ZERO_WRITE 115243080
+#define GET_RESULT_REQUEST 15242980
+#define OFFLOAD_DEBUG 0
 
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
@@ -50,6 +52,10 @@ void set_core(bool on, int core_num);
 uint32_t number_of_cores();
 
 bool is_core_on(int core_num);
+
+long double read_piargs(int threadID);
+
+void write_piargs(int threadID, double intervals, int numThreads);
 
 void __init(int(*start_routine) (int, char**), int argc, char **argv);
 
