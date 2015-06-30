@@ -1,0 +1,237 @@
+\documentclass[11pt, a4paper]{article}
+
+\usepackage[hmargin=2.5cm,vmargin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage[brazil]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{url}
+\usepackage{array}
+\usepackage{float}
+\usepackage{tocloft}
+\usepackage{indentfirst}
+\usepackage{graphicx,color}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{subfig}
+\usepackage{pdfpages}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{color}
+\usepackage{enumerate}
+\usepackage{multirow}
+\usepackage{xcolor,colortbl}
+\usepackage{longtable}
+\usepackage[justification=centering]{caption}
+\usepackage[cm]{fullpage}
+\usepackage{wrapfig}
+\usepackage{amssymb}
+\usepackage{titling}
+\usepackage{lscape}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+\definecolor{mygray}{rgb}{0.7,0.7,0.7}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+
+\lstdefinestyle{mystyle}{
+    % choose the language of the code
+    language=C,
+    % where to put the line-numbers
+    numbers=left,
+    % the step between two line-number
+    stepnumber=1,
+    % how far the line-numbers are from the code
+    numbersep=5pt,
+    % choose the background color.
+    %backgroundcolor=\color{mygray},
+    % show spaces adding particular underscores
+    showspaces=false,
+    % underline spaces within strings
+    showstringspaces=false,
+    % show tabs within strings adding particular underscores
+    showtabs=false,
+    % sets default tabsize to x spaces
+    tabsize=2,
+    % sets the caption-position to bottom
+    captionpos=b,
+    % sets automatic line breaking
+    breaklines=true,
+    % sets if automatic breaks should only happen at whitespace
+    breakatwhitespace=true,
+    % show the filename of files included with \lstinputlisting;
+    %title=\lstname,
+    %commentstyle=\color{blue},
+    %stringstyle=\color{magenta},
+    %keywordstyle=\color{brown},
+    %identifierstyle=\color{blue},
+    %numberstyle=\color{black},
+    frame=tb,
+    aboveskip=3mm,
+    belowskip=3mm,
+    columns=flexible,
+    basicstyle={\small\ttfamily},
+    numberstyle=\tiny\color{black},
+    keywordstyle=\color{blue},
+    commentstyle=\color{mygray},
+    stringstyle=\color{red},
+    escapeinside={<@}{@>}
+}
+\lstset{style=mystyle}
+
+\begin{document}
+
+\begin{titlepage}
+
+\title{\vspace*{4cm}\textbf{Projeto $3^{+}$ \\ Processador Multicore}\vspace{1cm}}
+\author{Gabriel Borges \\ RA: 116909 \\ Grupo 5}
+\date{30 de junho de 2015}
+\clearpage\maketitle
+
+\tableofcontents
+\thispagestyle{empty}
+
+\vspace*{\fill}
+
+\begin{center}
+Professor: Rodolfo Jardim de Azevedo \\
+MC723 - Laboratório de Projeto de Sistemas Computacionais \\
+Turmas A e B
+\end{center}
+
+\end{titlepage}
+
+\newpage
+
+\section{Introdução}
+
+O objetivo deste projeto é desenvolver e estender o funcionamento de um processador de múltiplos núcleos. Para isso, se utilizou o simulador ArchC (uma linguagem de descrição de arquiteturas de processadores baseada na linguagem SystemC) para simular a execução de um programa relevante na arquitetura de processador MIPS, com o intuito de observar o funcionamento da arquitetura \textit{multicore}, bem como de constatar os ganhos atingidos com o módulo de \textit{harware} criado para acelerar o desempenho do sistema. Finalmente, foi também necessário implementar em \textit{hardware} recursos que permitissem a execução concorrente de trechos críticos de código.
+
+\section{Programa de Testes}
+
+O programa de testes utilizado tinha o objetivo de calcular, com a melhor precisão possível, uma aproximação para o número $\pi$. Para tanto, nos valemos das seguintes relações: \\
+\begin{equation}
+\pi = 4 * atan(1)
+\end{equation}
+\\
+\begin{equation}
+atan(x) = \int_{0}^{x} \frac{1}{1+x^2} dx \rightarrow \pi = 4 * \int_{0}^{1} \frac{1}{1+x^2} dx  
+\end{equation}
+
+O método usa somas de \textit{Riemann} com intervalos definidos pelo usuário para fazer o cálculo da aproximação para a integral. Em sua versão \textit{multithread}, o programa subdivide essas tarefas entre os processos, somando os subcálculos para chegar no valor final ao término da execução.
+
+O código foi adaptado para certas especificidades do projeto de \url{http://cs.calvin.edu/curriculum/cs/374/homework/threads/01/pi.c}.
+
+\section{Decisões de projeto}
+
+Para corretamente projetar e analisar a arquitetura \textit{multicore} do processador, consideramos os seguintes fatores:
+
+\subsection{Controlador de processadores}
+
+Como já evidenciado no roteiro inicial deste projeto e empregado no sistema apresentado, é comum que, num regime \textit{multicore} de processadores, assim que houver \textit{boot} no sistema ou \textit{hard reset}, os núcleos sejam inicialmente inicializados e colocados num estado à espera do sistema operacional. O \textit{bootstrap processor} (processador a carregar o sistema operacional em primeira instância) então começa a executar instruções, que eventualmente farão uso dos demais processadores. Quando isso ocorre, este ou estes sai(em) do modo de espera e é(são) colocado(s) à executar instruções definidas.
+
+Neste projeto, a plataforma de intercâmbio entre os núcleos \textit{per se} e o sistema operacional é um controlador de processadores, representado por um periférico chamado \textit{cores\_controller}. A comunicação entre o periférico e o sistema é feita através de três interfaces:
+
+\begin{itemize}
+\item A função \textbf{\texttt{number\_of\_cores}} retorna a quantidade de núcleos do processador disponíveis ao sistema operacional;
+\item A função \textbf{\texttt{is\_core\_on}} recebe um índice de núcleo do processador (esses índices são naturais de $0$ a \texttt{number\_of\_cores()}$ - 1$), e retorna se o núcleo explicitado está ou não ativo (ou ``ligado'');
+\item A função \textbf{\texttt{set\_core}} recebe um \textit{status} (\textit{on/off}) e um índice de núcleo do processador, e associa ao processador correspondente àquele índice o \textit{status} recebido. Essa função é utilizada para ``ligar'' e ``desligar'' núcleos quando se fizer necessário.
+\end{itemize}
+
+Em termos de implementação na arquitetura \textit{ArchC}, o controlador foi feito de maneira análoga à memória fornecida no repositório original do projeto\footnote{disponível em \url{/home/staff/rodolfo/mc723/base_platform.git}.}. Desta sorte, seu funcionamento pode ser resumidamente explicado da seguinte forma:
+\begin{enumerate}
+\item Requisições tratadas pelo \textit{bus} através de seu método \texttt{transport} que outrora eram inevitavelmente direcionadas ao \texttt{transport} equivalente na memória agora podem ser levadas ao do referido controlador, de acordo com a posição do endereço acessado;
+\item Na lógica do controlador, essas requisições podem ser tanto de leitura (caso das funções \textbf{\texttt{number\_of\_cores}} e \textbf{\texttt{is\_core\_on}}) como de gravação (caso da função \textbf{\texttt{set\_core}}). Outros mecanismos de controle são empregados para determinar qual a função desejada, bem como seus argumentos;
+\item A requisição é atendida (especificamente, nos módulos disponíveis em \texttt{cores\_controller.cpp}) e os efeitos colaterais, realizados (caso de ser necessário que núcleos sejam ligados/desligados);
+\item Para o sistema operacional, a maneira de acessar tais funcionalidades é de ler de (caso de requisições de leitura) ou gravar em (caso de requisições de gravação) endereços específicos em memória. Essas solicitações são então levadas até o controlador de processadores, no processo descrito acima.
+\end{enumerate}
+
+\subsection{Controle de concorrência}
+
+O controle de concorrência foi implementado em \textit{hardware}. Com o intuito de manter a coerência com operações da arquitetura \textit{MIPS}, as instruções implementadas foram as seguintes:
+\begin{itemize}
+\item \textbf{Load Linked} (\texttt{ll}): Instrução do tipo I, de \textit{opcode} $30_{hex}$. \\ Faz a operação \texttt{R[rt] = M[R[rs]+SignExtImm]} (idêntica à instrução \texttt{lw}), e que seta um campo especial com o valor \texttt{R[rt]} (doravante denominado \texttt{history});
+\item \textbf{Store Contiditional} (\texttt{sc}): Instrução do tipo I, de \textit{opcode} $38_{hex}$. Faz as seguintes operações: \\ \textit{a)} \texttt{M[R[rs]+SignExtImm] = R[rt]}; \textit{b)} \texttt{R[rt] = R[Rt] == history ? 1 : 0}. \\ A operação \textit{``a)''} é idêntica à \texttt{sw}, e o item \textit{``b)''} é o que determina se a operação é atômica, registrando essa condição em \texttt{R[rt]}.
+\end{itemize}
+
+Com as instruções \texttt{ll} e \texttt{sc} disponíveis em \textit{hardware}, podemos implementar as operações da biblioteca \texttt{pthread} utilizadas no \textit{software} de teste. As funções implementadas são as seguintes:
+\begin{itemize}
+\item \texttt{pthread\_create}: cria uma nova \textit{thread}, se possível, e destina um processador a trabalhar nela. Também recebe o ponteiro para uma função -- a execução do processador designado deve iniciar nessa função. Sua implementação verifica se existe processador ocioso, e em caso afirmativo, associa a ele a \textit{thread} requisitada;
+\item \texttt{pthread\_join}: aguarda até que a \textit{thread} correspondente tenha terminado sua execução (se isto ainda não tiver ocorrido), interrompendo a execução da \textit{thread} atual até que a condição se concretize. Sua implementação interrompe a execução até que o processador correspondente esteja ocioso;
+\item \texttt{pthread\_mutex\_init}: inicializa o \textit{mutex} correspondente, permitindo que ele seja bloqueado ou desbloqueado;
+\item \texttt{pthread\_mutex\_lock}: operação de bloqueio do \textit{mutex} (aguarda até que o \textit{mutex} esteja liberado, quando o bloqueia e faz uso do recurso crítico). Implementado com o seguinte loop: \\ \texttt{while (load\_linked(mutex) || !store\_conditional(mutex, 1));}
+\item \texttt{pthread\_mutex\_unlock}: operação de desbloqueio do \textit{mutex}. Meramente altera o valor da chave para zero.
+\end{itemize}
+
+\subsection{\textit{Hardware Offloading}}
+
+Ao analisar a estrutura do código principal de testes, \texttt{pi.c}, é evidente perceber que o gargalo na execução está no loop principal da função \texttt{computePI()}. Portanto, essa foi a seção em que se fez o \textit{hardware offloading}.
+
+Para tanto, criamos mais um componente do dispositivo, de maneira similar à criação do controlador de processadores, descrito acima. A função desse dispositivo seria de efetuar o cálculo da aproximação para $\pi$, para uma \textit{thread} específica, de acordo com o número de \textit{threads} total e o número de intervalos de cálculo. 
+
+Foi criada a função \texttt{offload\_arctan()} com esse objetivo. Se o \textit{offloading} não está ativo, a computação segue em software conforme esperado. Em caso contrário, cada \textit{thread} escreve em um arquivo os parâmetros necessários para o cálculo da função desejada e chama uma operação de leitura, que sinaliza ao sistema no \textit{hardware} que o arquivo gravado está disponível para leitura, e que a \textit{thread} está aguardando a resposta. O componente em \textit{hardware}, por sua vez, lê os argumentos do arquivo, efetua o cálculo desejado e grava o resultado noutro arquivo, que é, por fim, lido novamente pelo programa principal.
+
+\section {Resultados}
+
+É uma propriedade da soma de \textit{Riemann} que quanto maior o número de intervalos utilizados para aproximar uma integral, maior será a precisão da aproximação. Também é esperado que quanto maior o número de processadores utilizados para o desempenho da tarefa, mais rápida deve ser sua execução, descontado o \textit{overhead} de criação e sincronização dos processos. Temos a seguinte tabela com os resultados experimentados:
+
+\begin{table}[h]
+\centering
+\caption{Performance do programa de testes}
+\label{my-label}
+\begin{tabular}{|lllll|}
+\hline
+Offload & T & I      & E    & Tempo gasto (s) \\ \hline
+Não     & 1 & 100    & 5.6  & 0.54            \\
+Sim     & 1 & 100    & 5.6  & 1.67            \\
+Não     & 1 & 1000   & 7.6  & 4.93            \\
+Sim     & 1 & 1000   & 7.6  & 1.64            \\
+Não     & 2 & 1000   & 7.6  & 3.76            \\
+Não     & 7 & 1000   & 7.6  & 2.87            \\
+Não     & 7 & 5000   & 9.0  & 14.09           \\
+Sim     & 1 & 5000   & 9.0  & 1.65            \\
+Sim     & 1 & $10^5$ & 11.6 & 1.67            \\
+Sim     & 1 & $10^6$ & 13.6 & 1.67            \\
+Sim     & 1 & $10^7$ & 15.6 & 1.83            \\
+Sim     & 1 & $10^8$ & 15.7 & 3.40            \\
+Sim     & 2 & $10^8$ & 15.7 & 5.78            \\
+Sim     & 1 & $10^9$ & 15.3 & 19.03           \\ \hline
+\end{tabular}
+\end{table}
+
+Legenda:
+\begin{itemize}
+\item \textbf{Offload}: Determina se o \textit{hardware offload} foi utilizado; 
+\item \textbf{T}: Número de \textit{threads} utilizadas no cálculo. Esse número deve variar entre $1$ e $7$, pois uma thread é utilizada para a sincronização dos dados;
+\item \textbf{I}: Número de intervalos;
+\item \textbf{E}: $-log_{10}(\pi_{medido}/\pi)$, aproximado para uma casa decimal. Quanto maior este valor, mais precisa é a aproximação;
+\item \textbf{Tempo gasto (s)}: Tempo ``real'' medido em segundos, aproximado para duas casas decimais.
+\end{itemize}
+
+\clearpage
+
+Os resultados nos permitem tomar as seguintes conclusões:
+
+\begin{itemize}
+\item Há um certo significativo \textit{overhead} para todos os modos. Na versão sem \textit{offload}, ele começa a perder importância a partir de $I \approx 1000$. Já na com offload, ele parece deixar de se manifestar para $I \approx 10^8$;
+\item A influência da paralelização no modo sem \textit{offload} não é diretamente proporcional à redução do tempo gasto: de fato, os programas são executados em menos tempo, mas o fator de redução é bem menor que o de aumento no número de núcleos;
+\item A introdução do \textit{offload} permite reduções extremamente significativas nos tempos de execução do programa;
+\item Como o hardware de \textit{offload} não é paralelizado, não é vantajoso paralelizar a execução do programa de testes em modo paralelo (já que todo o seu \textit{hot spot} foi transportado para o hardware).
+\end{itemize}
+
+\section{Conclusão}
+
+Os objetivos do projeto foram plenamente alcançados: o controlador de processadores está completamente funcional, o controle de concorrência foi implementado segundo as especificações e a implementação de código em \textit{hardware} foi realizada. As metas atingidas nos permitiram fazer as seguintes observações:
+\begin{itemize}
+\item Ficou bastante clara uma simples e eficiente maneira de inicializar processadores \textit{multicore}, recorrendo à criação de um periférico para o gerenciamento das chamadas de suporte aos núcleos, e encarregando o sistema operacional de definir os momentos de inicialização dos núcleos além do principal (\textit{bootstrap processor});
+\item Uma etapa anterior deste projeto envolveu uma implementação das rotinas de \texttt{lock} e \texttt{unlock} em \textit{software}, sem recorrer a instruções atômicas. Embora funcional, a técnica era bastante lenta e com alto \textit{overhead}. Ficava evidente a necessidade da implementação desse recurso em \textit{hardware}. Uma vez tendo se alcançado esse objetivo, pudemos perceber a mudança em performance das rotinas de teste. Finalmente, uma vez que fizemos \textit{wrappers} para funções da biblioteca \texttt{pthread}, transportar outras rotinas de teste que também utilizem a biblioteca para o sistema \textit{MIPS} desenvolvido deve ser pouco trabalhoso, se requerir algum trabalho;
+\item A implementação dos ``gargalos'' da rotina em \textit{hardware} nos permitiu observar ganhos consideráveis no desempenho da aplicação -- devido aos longos tempos de espera na configuração \textit{multithread} sem \textit{offload}, a comparação entre os modos não é necessariamente estatisticamente relevante. Se extrapolando os resultados observados, no entanto, notamos ganhos entre $8x$ e $148,000x$. Uma vez não tendo o processador sido concebido para realizar as operações características do ``gargalo'', a concepção de um componente em \textit{hardware} com essa função efetivamente elimina o \textit{overhead} experimentado e torna a computação extremamente rápida. Exemplos de dispositivos reais que fazem uso dessa estratégia são \textit{GPUs}: essas resolvem uma área de problemas que \textit{CPUs} são muito menos eficientes em resolver. Isso se deve à diferença arquitetural dessas unidades de hardware.
+
+\end{itemize}
+
+\textbf{Link para o repositório com o código fonte do projeto: \url{https://github.com/borgesgabriel/mc723_p3}.}
+
+% \bibliography{main}
+% \bibliographystyle{plain}
+
+
+\end{document}
